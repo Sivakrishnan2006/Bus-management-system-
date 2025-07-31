@@ -1,0 +1,30 @@
+package com.busbooking;
+import java.io.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.sql.*;
+
+public class SearchBusServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        String source = request.getParameter("source");
+        String destination = request.getParameter("destination");
+
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT r.route_id,b.bus_name,r.departure_time FROM routes r JOIN buses b ON r.bus_id=b.bus_id WHERE source=? AND destination=?";
+            PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setString(1, source);
+            pst.setString(2, destination);
+            ResultSet rs = pst.executeQuery();
+
+            out.println("<h2>Available Buses</h2>");
+            while(rs.next()) {
+                out.println("Route ID: "+rs.getInt(1)+" | Bus: "+rs.getString(2)+" | Departure: "+rs.getTimestamp(3)+"<br>");
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
